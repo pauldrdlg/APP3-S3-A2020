@@ -11,36 +11,36 @@ import ChainOfResponsibility.*;
 
 public class ServerApplicationThread extends Thread{
     protected DatagramSocket socket = null;
-    protected BufferedReader in = null;
+    //protected BufferedReader in = null;
     protected boolean moreQuotes = true;
 
-    private TransportLayer transportLayerSender;
-    private DataLinkLayer dataLinkLayerSender;
-    private TransportLayer transportLayerReceiver;
-    private DataLinkLayer dataLinkLayerReceiver;
+    private TransportLayer transportLayer;
+    private DataLinkLayer dataLinkLayer;
+    private ApplicationLayer applicationLayer;
 
     public ServerApplicationThread() throws IOException {
-        this("QuoteServerThread");
+        this("ServerApplicationThread");
 
-        transportLayerSender = new TransportLayer();
-        dataLinkLayerSender = new DataLinkLayer();
-        transportLayerReceiver = new TransportLayer();
-        dataLinkLayerReceiver = new DataLinkLayer();
+        transportLayer = new TransportLayer();
+        dataLinkLayer = new DataLinkLayer();
+        applicationLayer = new ApplicationLayer();
 
-        transportLayerSender.setNext(dataLinkLayerSender);
-        dataLinkLayerReceiver.setNext(transportLayerReceiver);
+        applicationLayer.setNext(transportLayer);
+        transportLayer.setNext(dataLinkLayer);
+        dataLinkLayer.setPrevious(transportLayer);
+        transportLayer.setPrevious(applicationLayer);
     }
 
     public ServerApplicationThread(String name) throws IOException {
         super(name);
         socket = new DatagramSocket(4445);
 
-        try {
+        /*try {
             in = new BufferedReader(new FileReader("test.txt"));
         } catch (FileNotFoundException e) {
 
             System.err.println("Could not open quote file. Serving time instead." + e);
-        }
+        }*/
     }
 
     public void run() {
@@ -51,15 +51,16 @@ public class ServerApplicationThread extends Thread{
 
                 // receive request
                 DatagramPacket packet = new DatagramPacket(buf, buf.length);
-                dataLinkLayerReceiver.receive(packet, socket);
+
+                dataLinkLayer.receive(packet, socket);
 
                 // figure out response
-                String dString = null;
+                /*String dString = null;
                 if (in == null)
                     dString = new Date().toString();
                 else
-                    dString = getNextQuote();
-
+                    dString = getNextQuote();*/
+                String dString = "Message du serveur!";
                 buf = dString.getBytes();
 
                 // send the response to the client at "address" and "port"
@@ -67,7 +68,7 @@ public class ServerApplicationThread extends Thread{
                 int port = packet.getPort();
                 packet = new DatagramPacket(buf, buf.length, address, port);
 
-                transportLayerSender.send(packet, socket);
+                applicationLayer.send(packet, socket);
             } catch (IOException e) {
                 e.printStackTrace();
                 moreQuotes = false;
@@ -76,7 +77,7 @@ public class ServerApplicationThread extends Thread{
         socket.close();
     }
 
-    protected String getNextQuote() {
+    /*protected String getNextQuote() {
         String returnValue = null;
         try {
             if ((returnValue = in.readLine()) == null) {
@@ -88,5 +89,5 @@ public class ServerApplicationThread extends Thread{
             returnValue = "IOException occurred in server.";
         }
         return returnValue;
-    }
+    }*/
 }

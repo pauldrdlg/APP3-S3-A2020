@@ -7,7 +7,12 @@ import java.net.DatagramSocket;
 public class TransportLayer extends Layer{
     @Override
     public void send(DatagramPacket packet, DatagramSocket socket) throws IOException{
-        System.out.println("Tansport send");
+
+        /*byte[] buf = ("Olivier est le plus beau!!").getBytes();
+
+        packet.setData(buf, 0, buf.length);*/
+
+        //System.out.println("Tansport send");
 
         if(next != null)
         {
@@ -17,11 +22,13 @@ public class TransportLayer extends Layer{
 
     @Override
     public void receive(DatagramPacket packet, DatagramSocket socket) throws IOException {
-        System.out.println("Transport receive");
 
-        if(next != null)
+
+        //System.out.println("Transport receive");
+
+        if(previous != null)
         {
-            next.receive(packet, socket);
+            previous.receive(packet, socket);
         }
     }
 }

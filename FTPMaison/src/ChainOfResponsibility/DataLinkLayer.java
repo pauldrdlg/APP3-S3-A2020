@@ -9,7 +9,7 @@ public class DataLinkLayer extends Layer{
     public void send(DatagramPacket packet, DatagramSocket socket) throws IOException {
         socket.send(packet);
 
-        System.out.println("Data send");
+        //System.out.println("Data send");
         if(next != null)
         {
             next.send(packet, socket);
@@ -20,10 +20,10 @@ public class DataLinkLayer extends Layer{
     public void receive(DatagramPacket packet, DatagramSocket socket) throws IOException {
         socket.receive(packet);
 
-        System.out.println("Data receive");
-        if(next != null)
+        //System.out.println("Data receive");
+        if(previous != null)
         {
-            next.receive(packet, socket);
+            previous.receive(packet, socket);
         }
     }
 }

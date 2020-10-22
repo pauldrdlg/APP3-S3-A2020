@@ -16,45 +16,46 @@ import java.net.InetAddress;
 import ChainOfResponsibility.*;
 
 public class ClientApplication {
-    private static TransportLayer transportLayerSender;
-    private static DataLinkLayer dataLinkLayerSender;
-    private static TransportLayer transportLayerReceiver;
-    private static DataLinkLayer dataLinkLayerReceiver;
+
+    private static TransportLayer transportLayer;
+    private static DataLinkLayer dataLinkLayer;
+    private static ApplicationLayer applicationLayer;
     private static DatagramSocket socket = null;
 
 
     public static void main(String[] args) throws IOException {
 
         if (args.length != 1) {
-            System.out.println("Usage: java QuoteClient <hostname>");
+            System.out.println("Il manque un parametre pour designer le destinataire: ClientApplication ligne 29");
             return;
         }
 
-        transportLayerSender = new TransportLayer();
-        dataLinkLayerSender = new DataLinkLayer();
-        transportLayerReceiver = new TransportLayer();
-        dataLinkLayerReceiver = new DataLinkLayer();
+        applicationLayer = new ApplicationLayer();
+        transportLayer = new TransportLayer();
+        dataLinkLayer = new DataLinkLayer();
 
-        transportLayerSender.setNext(dataLinkLayerSender);
-        dataLinkLayerReceiver.setNext(transportLayerReceiver);
+        applicationLayer.setNext(transportLayer);
+        transportLayer.setNext(dataLinkLayer);
+        dataLinkLayer.setPrevious(transportLayer);
+        transportLayer.setPrevious(applicationLayer);
 
         // get a datagram socket
         socket = new DatagramSocket();
 
         // send request
-        byte[] buf = new byte[256];
+        byte[] buf = ("Message du client!").getBytes();
         InetAddress address = InetAddress.getByName(args[0]);
         DatagramPacket packet = new DatagramPacket(buf, buf.length, address, 4445);
 
-        transportLayerSender.send(packet, socket);
+        applicationLayer.send(packet, socket);
 
         // get response
         packet = new DatagramPacket(buf, buf.length);
-        dataLinkLayerReceiver.receive(packet, socket);
+        dataLinkLayer.receive(packet, socket);
 
         // display response
         String received = new String(packet.getData(), 0, packet.getLength());
-        System.out.println("Quote of the Moment: " + received);
+        System.out.println("Message received: " + received);
 
         socket.close();
     }
