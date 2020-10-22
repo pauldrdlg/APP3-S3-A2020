@@ -4,7 +4,7 @@
 * java ClientApplication
 *
 * Commande pour Olivier
-* cd 
+* cd "C:\Users\Olivier Lortie\Documents\UdeS-A20\APP 3\APP3-S3-A2020\FTPMaison\out\production\FTPMaison"
 * java ClientApplication
 * */
 
