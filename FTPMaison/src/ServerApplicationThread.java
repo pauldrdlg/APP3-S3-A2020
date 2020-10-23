@@ -64,11 +64,11 @@ public class ServerApplicationThread extends Thread{
                 buf = dString.getBytes();
 
                 // send the response to the client at "address" and "port"
-                InetAddress address = packet.getAddress();
+                /*InetAddress address = packet.getAddress();
                 int port = packet.getPort();
                 packet = new DatagramPacket(buf, buf.length, address, port);
 
-                applicationLayer.send(packet, socket);
+                applicationLayer.send(packet, socket);*/
             } catch (IOException e) {
                 e.printStackTrace();
                 moreQuotes = false;
