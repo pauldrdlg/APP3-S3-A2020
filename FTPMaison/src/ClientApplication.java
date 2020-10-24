@@ -28,7 +28,7 @@ public class ClientApplication {
     public static void main(String[] args) throws IOException {
 
         if (args.length != 1) {
-            System.out.println("Il manque un parametre pour designer le destinataire: ClientApplication ligne 29");
+            System.out.println("Il manque un parametre pour designer le destinataire: ClientApplication ligne 31");
             return;
         }
 
@@ -52,13 +52,13 @@ public class ClientApplication {
         applicationLayer.send(packet, socket, sourceFolder + "/" + "test.txt");
 
         // get response
-        packet = new DatagramPacket(buf, buf.length);
-        dataLinkLayer.receive(packet, socket);
+        /*packet = new DatagramPacket(buf, buf.length);
+        dataLinkLayer.receive(packet, socket);*/
 
 
         // display response
-        String received = new String(packet.getData(), 0, packet.getLength());
-        System.out.println("Message received: " + received);
+        /*String received = new String(packet.getData(), 0, packet.getLength());
+        System.out.println("Message received: " + received);*/
 
         socket.close();
     }

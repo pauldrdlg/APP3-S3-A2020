@@ -9,19 +9,19 @@ import java.nio.ByteBuffer;
 public class ApplicationLayer extends Layer{
     @Override
     public void send(DatagramPacket packet, DatagramSocket socket, String fileName) throws IOException {
-        File file = new File(fileName);
+        /*File file = new File(fileName);
         byte[] fileData = new byte[(int) file.length()];
         FileInputStream in = new FileInputStream(file);
         in.read(fileData);
         in.close();
 
-        fileName = fileName.split("/")[1];
+        fileName = fileName.split("/")[1];*/
 
 
-        /*BufferedReader in = null;
+        BufferedReader in = null;
 
         try {
-            in = new BufferedReader(new FileReader("test.txt"));
+            in = new BufferedReader(new FileReader(fileName));
         } catch (FileNotFoundException e) {
 
             System.err.println("Could not open file. Serving time instead." + e);
@@ -33,8 +33,8 @@ public class ApplicationLayer extends Layer{
             message += temp + "\n";
         }
         message = message.substring(0, message.length() - 1);
-        in.close();*/
-
+        in.close();
+        byte[] fileData = message.getBytes();
         //packet.setData(message.getBytes(), 0, message.getBytes().length);
 
         if(next != null)
@@ -62,7 +62,6 @@ public class ApplicationLayer extends Layer{
             // Close the file
             os.close();
         }
-
         catch (Exception e) {
             System.out.println("Exception: " + e);
         }

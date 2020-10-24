@@ -59,9 +59,9 @@ public class ServerApplicationThread extends Thread{
                 if (in == null)
                     dString = new Date().toString();
                 else
-                    dString = getNextQuote();*/
+                    dString = getNextQuote();
                 String dString = "Message du serveur!";
-                buf = dString.getBytes();
+                buf = dString.getBytes();*/
 
                 // send the response to the client at "address" and "port"
                 /*InetAddress address = packet.getAddress();
