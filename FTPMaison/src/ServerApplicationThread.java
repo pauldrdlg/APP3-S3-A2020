@@ -23,7 +23,7 @@ public class ServerApplicationThread extends Thread{
 
         transportLayer = new TransportLayer();
         dataLinkLayer = new DataLinkLayer();
-        applicationLayer = new ApplicationLayer();
+        applicationLayer = new ApplicationLayer("DestinationFolder");
 
         applicationLayer.setNext(transportLayer);
         transportLayer.setNext(dataLinkLayer);

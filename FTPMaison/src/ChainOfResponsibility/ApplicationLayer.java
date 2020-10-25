@@ -7,6 +7,12 @@ import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 public class ApplicationLayer extends Layer{
+    private String folderName;
+
+    public ApplicationLayer(String folderName) {
+        this.folderName = folderName;
+    }
+
     @Override
     public void send(DatagramPacket packet, DatagramSocket socket, String fileName) throws IOException {
         /*File file = new File(fileName);
@@ -21,7 +27,7 @@ public class ApplicationLayer extends Layer{
         BufferedReader in = null;
 
         try {
-            in = new BufferedReader(new FileReader(fileName));
+            in = new BufferedReader(new FileReader(folderName + "/" + fileName));
         } catch (FileNotFoundException e) {
 
             System.err.println("Could not open file. Serving time instead." + e);
@@ -48,7 +54,7 @@ public class ApplicationLayer extends Layer{
         String message = new String(buf, 0, buf.length);
         System.out.println(message);
 
-        String filepath = "DestinationFolder/" + filename;
+        String filepath = folderName + "/" + filename;
         File file = new File(filepath);
 
         try {

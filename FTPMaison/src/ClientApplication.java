@@ -17,8 +17,6 @@ import ChainOfResponsibility.*;
 
 public class ClientApplication {
 
-    private static final String sourceFolder = "SourceFolder";
-
     private static TransportLayer transportLayer;
     private static DataLinkLayer dataLinkLayer;
     private static ApplicationLayer applicationLayer;
@@ -32,7 +30,7 @@ public class ClientApplication {
             return;
         }
 
-        applicationLayer = new ApplicationLayer();
+        applicationLayer = new ApplicationLayer("SourceFolder");
         transportLayer = new TransportLayer();
         dataLinkLayer = new DataLinkLayer();
 
@@ -49,7 +47,7 @@ public class ClientApplication {
         InetAddress address = InetAddress.getByName(args[0]);
         DatagramPacket packet = new DatagramPacket(buf, buf.length, address, 4445);
 
-        applicationLayer.send(packet, socket, sourceFolder + "/" + "test.txt");
+        applicationLayer.send(packet, socket, "test.txt");
 
         // get response
         /*packet = new DatagramPacket(buf, buf.length);
