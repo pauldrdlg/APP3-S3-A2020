@@ -90,7 +90,7 @@ public class TransportLayer extends Layer{
     }
 
     @Override
-    public void receive(DatagramPacket packet, DatagramSocket socket, Log log, FileToSave fileToSave) throws IOException {
+    public void receive(DatagramPacket packet, DatagramSocket socket, Log log) throws IOException {
         byte[] crcBytes = separateByteArrays(0, 7, packet.getData());
         long crc = ByteBuffer.wrap(crcBytes).getLong();
 
@@ -105,6 +105,11 @@ public class TransportLayer extends Layer{
         dataBytes = trimZeros(dataBytes);
         String data = new String(dataBytes, 0, dataBytes.length);
 
+        System.out.println(crc);
+        System.out.println(message);
+        System.out.println(number);
+        System.out.println(data);
+
         switch (message)
         {
             case "FIRST":
@@ -115,7 +120,6 @@ public class TransportLayer extends Layer{
 
                 received = new boolean[nbPackets + 1];
                 received[0] = true;
-
 
                 break;
             case "DATA":
@@ -129,13 +133,9 @@ public class TransportLayer extends Layer{
                 break;
         }
 
-        System.out.println(message);
-        System.out.println(number);
-        System.out.println(data);*/
-
         if(previous != null)
         {
-            previous.receive(packet, socket, log, fileToSave);
+            previous.receive(packet, socket, log, fileName, completedFile);
         }
     }
 
@@ -169,12 +169,12 @@ public class TransportLayer extends Layer{
     }
 
     public byte[] createACKPacket(int numberPacket, boolean received) {
+        byte[] crc = new byte[crcSize];
+
         byte[] message = "ACK".getBytes();
         message = fillWithZeros(messageSize, message);
 
         byte[] number = ByteBuffer.allocate(numberSize).putInt(numberPacket).array();
-
-        byte[] crc = new byte[crcSize];
 
         byte[] data = new byte[0];
 
@@ -185,7 +185,7 @@ public class TransportLayer extends Layer{
         }
         data = fillWithZeros(dataSize, data);
 
-        return addByteArrays(message,addByteArrays(number, addByteArrays(crc, data)));
+        return addByteArrays(crc,addByteArrays(message, addByteArrays(number, data)));
     }
 
     public void sendACKPacket(int numberPacket, boolean received) {

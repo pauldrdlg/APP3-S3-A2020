@@ -1,7 +1,6 @@
 package ChainOfResponsibility;
 
-import ServerUtility.FileToSave;
-import ServerUtility.Log;
+import ServerUtility.*;
 
 import java.io.*;
 import java.net.DatagramPacket;
@@ -43,34 +42,31 @@ public class ApplicationLayer extends Layer{
     }
 
     @Override
-    public void receive(DatagramPacket packet, DatagramSocket socket, Log log, FileToSave fileToSave) throws IOException {
+    public void receive(DatagramPacket packet, DatagramSocket socket, Log log, String fileName, byte[] buf) throws IOException {
         byte[] numberBytes = separateByteArrays(28, 31, packet.getData());
         int number = ByteBuffer.wrap(numberBytes).getInt();
 
-        if(fileToSave.getNbPacket() == number)
-        {
-            String filepath = folderName + "/" + fileToSave.getFilename();
-            File file = new File(filepath);
+        String filepath = folderName + "/" + fileName;
+        File file = new File(filepath);
 
-            try {
-                // Initialize a pointer
-                // in file using OutputStream
-                OutputStream os = new FileOutputStream(file);
+        try {
+            // Initialize a pointer
+            // in file using OutputStream
+            OutputStream os = new FileOutputStream(file);
 
-                // Starts writing the bytes in it
-                os.write(fileToSave.getData().getBytes());
+            // Starts writing the bytes in it
+            os.write(buf);
 
-                // Close the file
-                os.close();
-            }
-            catch (Exception e) {
-                System.out.println("Exception: " + e);
-            }
+            // Close the file
+            os.close();
+        }
+        catch (Exception e) {
+            System.out.println("Exception: " + e);
         }
 
         if(previous != null)
         {
-            previous.receive(packet, socket, log, fileToSave);
+            previous.receive(packet, socket, log);
         }
     }
 }

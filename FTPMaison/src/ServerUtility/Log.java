@@ -5,13 +5,14 @@ public class Log {
     private int receivedPacket;
     private int lostPacket;
     private int crcPacketError;
-    private final String filename = "liaisonDeDonnees.log";
+    private String filename;
 
-    public Log() {
-        transmittedPacket = 0;
-        receivedPacket = 0;
-        lostPacket = 0;
-        crcPacketError = 0;
+    public Log(String fileName) {
+        this.transmittedPacket = 0;
+        this.receivedPacket = 0;
+        this.lostPacket = 0;
+        this.crcPacketError = 0;
+        this.filename = fileName;
     }
 
     public int getTransmittedPacket() {

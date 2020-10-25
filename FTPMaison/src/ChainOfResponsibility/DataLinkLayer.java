@@ -11,18 +11,18 @@ public class DataLinkLayer extends Layer{
     @Override
     public void send(DatagramPacket packet, DatagramSocket socket) throws IOException {
 
-        byte[] data = separateByteArrays(32, 199, packet.getData());
+        byte[] data = separateByteArrays(8, 199, packet.getData());
 
         //On ne trim pas les zéros de la data car on veut comparer le tout
         CRC32 crc = new CRC32();
         crc.update(data);
 
-            //System.out.println("CRC32: " + crc.getValue());
+        //System.out.println("CRC32: " + crc.getValue());
 
         byte[] crcByte = ByteBuffer.allocate(crcSize).putLong(crc.getValue()).array();
 
         // set CRC
-        packet.setData(writeInoByteArrays(24, 31, packet.getData(), crcByte));
+        packet.setData(writeIntoByteArrays(0, 7, packet.getData(), crcByte));
 
         socket.send(packet);
 
@@ -33,7 +33,7 @@ public class DataLinkLayer extends Layer{
     }
 
     @Override
-    public void receive(DatagramPacket packet, DatagramSocket socket, Log log, FileToSave fileToSave) throws IOException {
+    public void receive(DatagramPacket packet, DatagramSocket socket, Log log) throws IOException {
         socket.receive(packet);
 
         CRC32 crc = new CRC32();
@@ -45,12 +45,11 @@ public class DataLinkLayer extends Layer{
         if(crc.getValue() != ByteBuffer.wrap(separateByteArrays(0, 7, packet.getData())).getLong())
         {
             log.addcrcPacketError();
-            fileToSave.addError();
         }
 
         if(previous != null)
         {
-            previous.receive(packet, socket, log, fileToSave);
+            previous.receive(packet, socket, log);
         }
     }
 }

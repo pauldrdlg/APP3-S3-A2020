@@ -13,7 +13,6 @@ public class ServerApplicationThread extends Thread{
     private DataLinkLayer dataLinkLayer;
     private ApplicationLayer applicationLayer;
 
-    private FileToSave fileToSave;
     private Log log;
 
     public ServerApplicationThread() throws IOException {
@@ -33,8 +32,7 @@ public class ServerApplicationThread extends Thread{
         dataLinkLayer.setPrevious(transportLayer);
         transportLayer.setPrevious(applicationLayer);
 
-        fileToSave = new FileToSave();
-        log = new Log();
+        log = new Log("ServerLiaisonDeDonnees.log");
     }
 
     public void run() {
@@ -45,7 +43,7 @@ public class ServerApplicationThread extends Thread{
                 // receive request
                 DatagramPacket packet = new DatagramPacket(buf, buf.length);
 
-                dataLinkLayer.receive(packet, socket, log, fileToSave);
+                dataLinkLayer.receive(packet, socket, log);
 
                 // figure out response
                 /*String dString = null;

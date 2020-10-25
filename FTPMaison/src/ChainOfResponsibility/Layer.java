@@ -48,9 +48,15 @@ public abstract class Layer {
     }
 
 
-    public void receive(DatagramPacket packet, DatagramSocket socket, Log log, FileToSave fileToSave) throws IOException {
+    public void receive(DatagramPacket packet, DatagramSocket socket, Log log) throws IOException {
         if (previous != null) {
-            previous.receive(packet, socket, log, fileToSave);
+            previous.receive(packet, socket, log);
+        }
+    }
+
+    public void receive(DatagramPacket packet, DatagramSocket socket, Log log, String fileName, byte[] buf) throws IOException {
+        if (previous != null) {
+            previous.receive(packet, socket, log);
         }
     }
 

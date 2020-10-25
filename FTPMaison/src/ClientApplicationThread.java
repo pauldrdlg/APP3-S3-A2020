@@ -1,6 +1,5 @@
-import ChainOfResponsibility.ApplicationLayer;
-import ChainOfResponsibility.DataLinkLayer;
-import ChainOfResponsibility.TransportLayer;
+import ChainOfResponsibility.*;
+import ServerUtility.*;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -13,6 +12,7 @@ public class ClientApplicationThread extends Thread{
     private static DataLinkLayer dataLinkLayer;
     private static ApplicationLayer applicationLayer;
     private static DatagramSocket socket = null;
+    private static Log log;
 
     public ClientApplicationThread() throws IOException {
         this("ClientApplicationThread");
@@ -30,6 +30,8 @@ public class ClientApplicationThread extends Thread{
         transportLayer.setNext(dataLinkLayer);
         dataLinkLayer.setPrevious(transportLayer);
         transportLayer.setPrevious(applicationLayer);
+
+        log = new Log("ClientLiaisonDeDonnees.log");
     }
 
     public void run() {
@@ -39,7 +41,7 @@ public class ClientApplicationThread extends Thread{
                 byte[] buf = new byte[200];
                 // receive request
                 DatagramPacket packet = new DatagramPacket(buf, buf.length);
-                dataLinkLayer.receive(packet, socket);
+                dataLinkLayer.receive(packet, socket, log);
 
             } catch (IOException e) {
                 e.printStackTrace();
