@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.nio.ByteBuffer;
 import java.util.zip.CRC32;
+import ServerUtility.*;
 
 public class DataLinkLayer extends Layer{
     @Override
@@ -12,18 +13,18 @@ public class DataLinkLayer extends Layer{
 
         for(int i = 0; i < listPackets.length; i++)
         {
-            byte[] data = separateByteArrays(32, 199, listPackets[i].getData());
+            byte[] data = separateByteArrays(8, 199, listPackets[i].getData());
 
             //On ne trim pas les zéros de la data car on veut comparer le tout
             CRC32 crc = new CRC32();
             crc.update(data);
 
-            System.out.println("CRC32: " + crc.getValue());
+            //System.out.println("CRC32: " + crc.getValue());
 
             byte[] crcByte = ByteBuffer.allocate(crcSize).putLong(crc.getValue()).array();
 
             // set CRC
-            listPackets[i].setData(writeInoByteArrays(24, 31, listPackets[i].getData(), crcByte));
+            listPackets[i].setData(writeIntoByteArrays(0, 7, listPackets[i].getData(), crcByte));
 
             socket.send(listPackets[i]);
         }
@@ -35,16 +36,24 @@ public class DataLinkLayer extends Layer{
     }
 
     @Override
-    public void receive(DatagramPacket packet, DatagramSocket socket) throws IOException {
+    public void receive(DatagramPacket packet, DatagramSocket socket, Log log, FileToSave fileToSave) throws IOException {
         socket.receive(packet);
 
         CRC32 crc = new CRC32();
-        crc.update(separateByteArrays(32, 199, packet.getData()));
-        System.out.println("CRC32 DATA:"+ crc.getValue());
+        crc.update(separateByteArrays(8, 199, packet.getData()));
+        System.out.println("CRC32 DATA: "+ crc.getValue());
+
+        log.addReceivedPacket();
+
+        if(crc.getValue() != ByteBuffer.wrap(separateByteArrays(0, 7, packet.getData())).getLong())
+        {
+            log.addcrcPacketError();
+            fileToSave.addError();
+        }
 
         if(previous != null)
         {
-            previous.receive(packet, socket);
+            previous.receive(packet, socket, log, fileToSave);
         }
     }
 }

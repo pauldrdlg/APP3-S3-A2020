@@ -3,8 +3,8 @@ package ChainOfResponsibility;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.nio.Buffer;
-import java.nio.ByteBuffer;
+
+import ServerUtility.*;
 
 public abstract class Layer {
     protected Layer next;
@@ -48,17 +48,12 @@ public abstract class Layer {
     }
 
 
-    public void receive(DatagramPacket packet, DatagramSocket socket) throws IOException {
+    public void receive(DatagramPacket packet, DatagramSocket socket, Log log, FileToSave fileToSave) throws IOException {
         if (previous != null) {
-            previous.receive(packet, socket);
+            previous.receive(packet, socket, log, fileToSave);
         }
     }
 
-    public void receive(DatagramPacket packet, DatagramSocket socket, String fileName, byte[] buf) throws IOException {
-        if (previous != null) {
-            previous.receive(packet, socket);
-        }
-    }
 
     public byte[] trimZeros(byte[] buf) {
         String str = new String(buf, 0, buf.length);
@@ -105,7 +100,7 @@ public abstract class Layer {
         return temp;
     }
 
-    public byte[] writeInoByteArrays(int start, int end, byte[] originalBuf, byte[] toInsert) {
+    public byte[] writeIntoByteArrays(int start, int end, byte[] originalBuf, byte[] toInsert) {
         int count = 0;
 
         for(int i = start; i <= end; i++)

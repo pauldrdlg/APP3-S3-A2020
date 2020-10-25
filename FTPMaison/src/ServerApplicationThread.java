@@ -1,13 +1,9 @@
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.util.Date;
 
 import ChainOfResponsibility.*;
+import ServerUtility.*;
 
 public class ServerApplicationThread extends Thread{
     protected DatagramSocket socket = null;
@@ -17,6 +13,9 @@ public class ServerApplicationThread extends Thread{
     private TransportLayer transportLayer;
     private DataLinkLayer dataLinkLayer;
     private ApplicationLayer applicationLayer;
+
+    private FileToSave fileToSave;
+    private Log log;
 
     public ServerApplicationThread() throws IOException {
         this("ServerApplicationThread");
@@ -29,6 +28,9 @@ public class ServerApplicationThread extends Thread{
         transportLayer.setNext(dataLinkLayer);
         dataLinkLayer.setPrevious(transportLayer);
         transportLayer.setPrevious(applicationLayer);
+
+        fileToSave = new FileToSave();
+        log = new Log();
     }
 
     public ServerApplicationThread(String name) throws IOException {
@@ -44,7 +46,6 @@ public class ServerApplicationThread extends Thread{
     }
 
     public void run() {
-
         while (moreQuotes) {
             try {
                 byte[] buf = new byte[256];
@@ -52,7 +53,7 @@ public class ServerApplicationThread extends Thread{
                 // receive request
                 DatagramPacket packet = new DatagramPacket(buf, buf.length);
 
-                dataLinkLayer.receive(packet, socket);
+                dataLinkLayer.receive(packet, socket, log, fileToSave);
 
                 // figure out response
                 /*String dString = null;

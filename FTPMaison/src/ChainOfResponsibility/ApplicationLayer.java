@@ -1,9 +1,11 @@
 package ChainOfResponsibility;
 
+import ServerUtility.FileToSave;
+import ServerUtility.Log;
+
 import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 public class ApplicationLayer extends Layer{
@@ -48,31 +50,34 @@ public class ApplicationLayer extends Layer{
     }
 
     @Override
-    public void receive(DatagramPacket packet, DatagramSocket socket, String filename, byte[] buf) throws IOException {
-        String message = new String(buf, 0, buf.length);
-        System.out.println(message);
+    public void receive(DatagramPacket packet, DatagramSocket socket, Log log, FileToSave fileToSave) throws IOException {
+        byte[] numberBytes = separateByteArrays(28, 31, packet.getData());
+        int number = ByteBuffer.wrap(numberBytes).getInt();
 
-        String filepath = folderName + "/" + filename;
-        File file = new File(filepath);
+        if(fileToSave.getNbPacket() == number)
+        {
+            String filepath = folderName + "/" + fileToSave.getFilename();
+            File file = new File(filepath);
 
-        try {
-            // Initialize a pointer
-            // in file using OutputStream
-            OutputStream os = new FileOutputStream(file);
+            try {
+                // Initialize a pointer
+                // in file using OutputStream
+                OutputStream os = new FileOutputStream(file);
 
-            // Starts writing the bytes in it
-            os.write(buf);
+                // Starts writing the bytes in it
+                os.write(fileToSave.getData().getBytes());
 
-            // Close the file
-            os.close();
-        }
-        catch (Exception e) {
-            System.out.println("Exception: " + e);
+                // Close the file
+                os.close();
+            }
+            catch (Exception e) {
+                System.out.println("Exception: " + e);
+            }
         }
 
         if(previous != null)
         {
-            previous.receive(packet, socket);
+            previous.receive(packet, socket, log, fileToSave);
         }
     }
 }
