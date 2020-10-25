@@ -42,8 +42,12 @@ public class TransportLayer extends Layer{
     private String fileName;
     private int nbPackets;
 
+    // Cet attribut permet de savoir quels paquets ont été correctement reçus
+    private static boolean[] received;
+
     // Ces attributs permettent de gérer les accusés de réception et de renvoyer des paquets au besoin
     private DatagramPacket[] listPackets;
+
 
     @Override
     public void send(DatagramPacket packet, DatagramSocket socket, String fileName, byte[] buf) throws IOException{
@@ -110,11 +114,18 @@ public class TransportLayer extends Layer{
 
                 fileName = data.split("@@")[0];
                 nbPackets = Integer.parseInt(data.split("@@")[1]);
+
+                received = new boolean[nbPackets + 1];
+                received[0] = true;
+
+
                 break;
             case "DATA":
                 completedFile = addByteArrays(completedFile, dataBytes);
+                received[number] = true;
                 break;
-            case "ACCUSE":
+            case "ACK":
+                System.out.println("Accusé de réception du paquet " + number + " : " + data);
                 break;
             default:
                 break;
@@ -158,6 +169,30 @@ public class TransportLayer extends Layer{
         data = fillWithZeros(dataSize, data);
 
         return addByteArrays(message,addByteArrays(number, addByteArrays(crc, data)));
+    }
+
+    public byte[] createACKPacket(int numberPacket, boolean received) {
+        byte[] message = "ACK".getBytes();
+        message = fillWithZeros(messageSize, message);
+
+        byte[] number = ByteBuffer.allocate(numberSize).putInt(numberPacket).array();
+
+        byte[] crc = new byte[crcSize];
+
+        byte[] data = new byte[0];
+
+        if (received) {
+            data = "DONE".getBytes();
+        } else {
+            data = "FAIL".getBytes();
+        }
+        data = fillWithZeros(dataSize, data);
+
+        return addByteArrays(message,addByteArrays(number, addByteArrays(crc, data)));
+    }
+
+    public void sendACKPacket(int numberPacket, boolean received) {
+        /*code pour envoyer un paquet ACK*/
     }
 
     public void resetFile() {
