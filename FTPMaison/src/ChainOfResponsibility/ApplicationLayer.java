@@ -15,13 +15,6 @@ public class ApplicationLayer extends Layer{
 
     @Override
     public void send(DatagramPacket packet, DatagramSocket socket, String fileName) throws IOException {
-        /*File file = new File(fileName);
-        byte[] fileData = new byte[(int) file.length()];
-        FileInputStream in = new FileInputStream(file);
-        in.read(fileData);
-        in.close();
-
-        fileName = fileName.split("/")[1];*/
 
         BufferedReader in = null;
 

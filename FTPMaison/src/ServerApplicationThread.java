@@ -11,8 +11,7 @@ import ChainOfResponsibility.*;
 
 public class ServerApplicationThread extends Thread{
     protected DatagramSocket socket = null;
-    //protected BufferedReader in = null;
-    protected boolean moreQuotes = true;
+    private boolean moreQuotes = true;
 
     private TransportLayer transportLayer;
     private DataLinkLayer dataLinkLayer;
@@ -20,6 +19,11 @@ public class ServerApplicationThread extends Thread{
 
     public ServerApplicationThread() throws IOException {
         this("ServerApplicationThread");
+    }
+
+    public ServerApplicationThread(String name) throws IOException {
+        super(name);
+        socket = new DatagramSocket(4445);
 
         transportLayer = new TransportLayer();
         dataLinkLayer = new DataLinkLayer();
@@ -29,18 +33,6 @@ public class ServerApplicationThread extends Thread{
         transportLayer.setNext(dataLinkLayer);
         dataLinkLayer.setPrevious(transportLayer);
         transportLayer.setPrevious(applicationLayer);
-    }
-
-    public ServerApplicationThread(String name) throws IOException {
-        super(name);
-        socket = new DatagramSocket(4445);
-
-        /*try {
-            in = new BufferedReader(new FileReader("test.txt"));
-        } catch (FileNotFoundException e) {
-
-            System.err.println("Could not open quote file. Serving time instead." + e);
-        }*/
     }
 
     public void run() {

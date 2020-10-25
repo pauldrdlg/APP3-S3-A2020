@@ -12,15 +12,15 @@
         - Contenu de fichier :
             - Data
         - Accusé :
-            - Vide
+            - DONE/FAIL
 
         Messages :
         - Premier paquet :
             FIRST
         - Contenu de fichier :
             DATA
-        - Accusé :
-            ACCUSE-DONE/FAIL
+        - Accusé de réception :
+            ACK
 
         - Taille réelle du paquet --> toujours 200 bytes
          --------*/
@@ -37,6 +37,13 @@ import java.nio.ByteBuffer;
 import java.util.*;
 
 public class TransportLayer extends Layer{
+    // Ces attributs servent à reconstituer le fichier complet à la réception
+    private byte[] completedFile = new byte[0];
+    private String fileName;
+    private int nbPackets;
+
+    // Ces attributs permettent de gérer les accusés de réception et de renvoyer des paquets au besoin
+    private DatagramPacket[] listPackets;
 
     @Override
     public void send(DatagramPacket packet, DatagramSocket socket, String fileName, byte[] buf) throws IOException{
@@ -45,11 +52,16 @@ public class TransportLayer extends Layer{
 
         byte[] packet1 = createFirstPacket(fileName, nbPackets);
 
-        DatagramPacket[] listPackets = new DatagramPacket[nbPackets + 1];
-
         InetAddress address = packet.getAddress();
         int port = packet.getPort();
+
+        listPackets = new DatagramPacket[nbPackets + 1];
+
         listPackets[0] = new DatagramPacket(packet1, packet1.length, address, port);
+
+        if (next != null) {
+            next.send(listPackets[0], socket);
+        }
 
         for(int i = 1; i <= nbPackets; i++)
         {
@@ -66,16 +78,17 @@ public class TransportLayer extends Layer{
             byte[] packetX = createPacket(i, separateByteArrays(start, end, buf));
 
             listPackets[i] = new DatagramPacket(packetX, packetX.length, address, port);
-        }
 
-        if(next != null)
-        {
-            next.send(listPackets, socket);
+            if(next != null)
+            {
+                next.send(listPackets[i], socket);
+            }
         }
     }
 
     @Override
     public void receive(DatagramPacket packet, DatagramSocket socket) throws IOException {
+
         byte[] messageBytes = separateByteArrays(0, 19, packet.getData());
         messageBytes = trimZeros(messageBytes);
         String message = new String(messageBytes, 0, messageBytes.length);
@@ -90,18 +103,31 @@ public class TransportLayer extends Layer{
         dataBytes = trimZeros(dataBytes);
         String data = new String(dataBytes, 0, dataBytes.length);
 
+        switch (message)
+        {
+            case "FIRST":
+                resetFile();
+
+                fileName = data.split("@@")[0];
+                nbPackets = Integer.parseInt(data.split("@@")[1]);
+                break;
+            case "DATA":
+                completedFile = addByteArrays(completedFile, dataBytes);
+                break;
+            case "ACCUSE":
+                break;
+            default:
+                break;
+        }
+
         System.out.println(message);
         System.out.println(number);
         System.out.println(crc);
         System.out.println(data);
 
-        String fileName = "test.txt";
-
-        byte[] completedFile = separateByteArrays(10, 255, packet.getData());
-
         if(previous != null)
         {
-            previous.receive(packet, socket, fileName, trimZeros(completedFile));
+            previous.receive(packet, socket, fileName, completedFile);
         }
     }
 
@@ -113,7 +139,7 @@ public class TransportLayer extends Layer{
 
         byte[] crc = new byte[crcSize];
 
-        byte[] data = (fileName + "**" + nbPackets).getBytes();
+        byte[] data = (fileName + "@@" + nbPackets).getBytes();
         data = fillWithZeros(dataSize, data);
 
         return addByteArrays(message,addByteArrays(number, addByteArrays(crc, data)));
@@ -132,5 +158,9 @@ public class TransportLayer extends Layer{
         data = fillWithZeros(dataSize, data);
 
         return addByteArrays(message,addByteArrays(number, addByteArrays(crc, data)));
+    }
+
+    public void resetFile() {
+        completedFile = new byte[0];
     }
 }

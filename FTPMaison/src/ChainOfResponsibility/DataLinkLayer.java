@@ -8,29 +8,26 @@ import java.util.zip.CRC32;
 
 public class DataLinkLayer extends Layer{
     @Override
-    public void send(DatagramPacket[] listPackets, DatagramSocket socket) throws IOException {
+    public void send(DatagramPacket packet, DatagramSocket socket) throws IOException {
 
-        for(int i = 0; i < listPackets.length; i++)
-        {
-            byte[] data = separateByteArrays(32, 199, listPackets[i].getData());
+        byte[] data = separateByteArrays(32, 199, packet.getData());
 
-            //On ne trim pas les zéros de la data car on veut comparer le tout
-            CRC32 crc = new CRC32();
-            crc.update(data);
+        //On ne trim pas les zéros de la data car on veut comparer le tout
+        CRC32 crc = new CRC32();
+        crc.update(data);
 
-            System.out.println("CRC32: " + crc.getValue());
+        System.out.println("CRC32: " + crc.getValue());
 
-            byte[] crcByte = ByteBuffer.allocate(crcSize).putLong(crc.getValue()).array();
+        byte[] crcByte = ByteBuffer.allocate(crcSize).putLong(crc.getValue()).array();
 
-            // set CRC
-            listPackets[i].setData(writeInoByteArrays(24, 31, listPackets[i].getData(), crcByte));
+        // set CRC
+        packet.setData(writeInoByteArrays(24, 31, packet.getData(), crcByte));
 
-            socket.send(listPackets[i]);
-        }
+        socket.send(packet);
 
         if(next != null)
         {
-            next.send(listPackets, socket);
+            next.send(packet, socket);
         }
     }
 
