@@ -12,15 +12,15 @@
         - Contenu de fichier :
             - Data
         - Accusé :
-            - Vide
+            - DONE/FAIL
 
         Messages :
         - Premier paquet :
             FIRST
         - Contenu de fichier :
             DATA
-        - Accusé :
-            ACCUSE-DONE/FAIL
+        - Accusé de réception :
+            ACK
 
         - Taille réelle du paquet --> toujours 200 bytes
          --------*/
@@ -36,6 +36,17 @@ import java.nio.ByteBuffer;
 import ServerUtility.*;
 
 public class TransportLayer extends Layer{
+    // Ces attributs servent à reconstituer le fichier complet à la réception
+    private byte[] completedFile = new byte[0];
+    private String fileName;
+    private int nbPackets;
+
+    // Cet attribut permet de savoir quels paquets ont été correctement reçus
+    private static boolean[] received;
+
+    // Ces attributs permettent de gérer les accusés de réception et de renvoyer des paquets au besoin
+    private DatagramPacket[] listPackets;
+
 
     @Override
     public void send(DatagramPacket packet, DatagramSocket socket, String fileName, byte[] buf) throws IOException{
@@ -44,11 +55,16 @@ public class TransportLayer extends Layer{
 
         byte[] packet1 = createFirstPacket(fileName, nbPackets);
 
-        DatagramPacket[] listPackets = new DatagramPacket[nbPackets + 1];
-
         InetAddress address = packet.getAddress();
         int port = packet.getPort();
+
+        listPackets = new DatagramPacket[nbPackets + 1];
+
         listPackets[0] = new DatagramPacket(packet1, packet1.length, address, port);
+
+        if (next != null) {
+            next.send(listPackets[0], socket);
+        }
 
         for(int i = 1; i <= nbPackets; i++)
         {
@@ -65,11 +81,11 @@ public class TransportLayer extends Layer{
             byte[] packetX = createPacket(i, separateByteArrays(start, end, buf));
 
             listPackets[i] = new DatagramPacket(packetX, packetX.length, address, port);
-        }
 
-        if(next != null)
-        {
-            next.send(listPackets, socket);
+            if(next != null)
+            {
+                next.send(listPackets[i], socket);
+            }
         }
     }
 
@@ -89,19 +105,30 @@ public class TransportLayer extends Layer{
         dataBytes = trimZeros(dataBytes);
         String data = new String(dataBytes, 0, dataBytes.length);
 
-        if(number == 0)
+        switch (message)
         {
-            String[] result = data.split("@@");
+            case "FIRST":
+                resetFile();
 
-            fileToSave.setFilename(result[0]);
-            fileToSave.setNbPacket(Integer.parseInt(result[1]));
-        }
-        else
-        {
-            fileToSave.addData(data);
+                fileName = data.split("@@")[0];
+                nbPackets = Integer.parseInt(data.split("@@")[1]);
+
+                received = new boolean[nbPackets + 1];
+                received[0] = true;
+
+
+                break;
+            case "DATA":
+                completedFile = addByteArrays(completedFile, dataBytes);
+                received[number] = true;
+                break;
+            case "ACK":
+                System.out.println("Accusé de réception du paquet " + number + " : " + data);
+                break;
+            default:
+                break;
         }
 
-        /*System.out.println(crc);
         System.out.println(message);
         System.out.println(number);
         System.out.println(data);*/
@@ -139,5 +166,33 @@ public class TransportLayer extends Layer{
         data = fillWithZeros(dataSize, data);
 
         return addByteArrays(crc,addByteArrays(message, addByteArrays(number, data)));
+    }
+
+    public byte[] createACKPacket(int numberPacket, boolean received) {
+        byte[] message = "ACK".getBytes();
+        message = fillWithZeros(messageSize, message);
+
+        byte[] number = ByteBuffer.allocate(numberSize).putInt(numberPacket).array();
+
+        byte[] crc = new byte[crcSize];
+
+        byte[] data = new byte[0];
+
+        if (received) {
+            data = "DONE".getBytes();
+        } else {
+            data = "FAIL".getBytes();
+        }
+        data = fillWithZeros(dataSize, data);
+
+        return addByteArrays(message,addByteArrays(number, addByteArrays(crc, data)));
+    }
+
+    public void sendACKPacket(int numberPacket, boolean received) {
+        /*code pour envoyer un paquet ACK*/
+    }
+
+    public void resetFile() {
+        completedFile = new byte[0];
     }
 }

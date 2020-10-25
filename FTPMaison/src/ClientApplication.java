@@ -16,13 +16,7 @@ import java.net.InetAddress;
 import ChainOfResponsibility.*;
 
 public class ClientApplication {
-
-    private static TransportLayer transportLayer;
-    private static DataLinkLayer dataLinkLayer;
-    private static ApplicationLayer applicationLayer;
-    private static DatagramSocket socket = null;
-
-
+    private static ClientApplicationThread clientApplicationThread;
     public static void main(String[] args) throws IOException {
 
         if (args.length != 1) {
@@ -30,34 +24,9 @@ public class ClientApplication {
             return;
         }
 
-        applicationLayer = new ApplicationLayer("SourceFolder");
-        transportLayer = new TransportLayer();
-        dataLinkLayer = new DataLinkLayer();
+        clientApplicationThread = new ClientApplicationThread();
+        clientApplicationThread.sendFile("test.txt", InetAddress.getByName(args[0]));
+        clientApplicationThread.start();
 
-        applicationLayer.setNext(transportLayer);
-        transportLayer.setNext(dataLinkLayer);
-        dataLinkLayer.setPrevious(transportLayer);
-        transportLayer.setPrevious(applicationLayer);
-
-        // get a datagram socket
-        socket = new DatagramSocket();
-
-        // send request
-        byte[] buf = new byte[256];
-        InetAddress address = InetAddress.getByName(args[0]);
-        DatagramPacket packet = new DatagramPacket(buf, buf.length, address, 4445);
-
-        applicationLayer.send(packet, socket, "test.txt");
-
-        // get response
-        /*packet = new DatagramPacket(buf, buf.length);
-        dataLinkLayer.receive(packet, socket);*/
-
-
-        // display response
-        /*String received = new String(packet.getData(), 0, packet.getLength());
-        System.out.println("Message received: " + received);*/
-
-        socket.close();
     }
 }
