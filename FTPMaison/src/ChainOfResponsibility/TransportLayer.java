@@ -37,7 +37,7 @@ import java.nio.ByteBuffer;
 public class TransportLayer extends Layer{
     private static final int dataSize = 172;
     private static final int messageSize = 20;
-    private static final int CRCSize = 4;
+    private static final int crcSize = 4;
     private static final int numberSize = 4;
 
     @Override
@@ -155,7 +155,7 @@ public class TransportLayer extends Layer{
 
         byte[] number = new byte[numberSize];
 
-        byte[] crc = new byte[CRCSize];
+        byte[] crc = new byte[crcSize];
 
         byte[] data = (fileName + "**" + nbPackets).getBytes();
         data = fillWithZeros(dataSize, data);
