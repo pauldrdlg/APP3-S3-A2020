@@ -3,23 +3,34 @@ package ChainOfResponsibility;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.nio.ByteBuffer;
 import java.util.zip.CRC32;
 
 public class DataLinkLayer extends Layer{
     @Override
-    public void send(DatagramPacket packet, DatagramSocket socket) throws IOException {
+    public void send(DatagramPacket[] listPackets, DatagramSocket socket) throws IOException {
 
-        //String input = "Hello World!";
-        CRC32 crc = new CRC32();
-        crc.update(packet.getData());
-        System.out.println("CRC32:"+ crc.getValue());
+        for(int i = 0; i < listPackets.length; i++)
+        {
+            byte[] data = separateByteArrays(32, 199, listPackets[i].getData());
 
-        socket.send(packet);
+            //On ne trim pas les zéros de la data car on veut comparer le tout
+            CRC32 crc = new CRC32();
+            crc.update(data);
 
-        //System.out.println("Data send");
+            System.out.println("CRC32: " + crc.getValue());
+
+            byte[] crcByte = ByteBuffer.allocate(crcSize).putLong(crc.getValue()).array();
+
+            // set CRC
+            listPackets[i].setData(writeInoByteArrays(24, 31, listPackets[i].getData(), crcByte));
+
+            socket.send(listPackets[i]);
+        }
+
         if(next != null)
         {
-            next.send(packet, socket);
+            next.send(listPackets, socket);
         }
     }
 
@@ -27,13 +38,10 @@ public class DataLinkLayer extends Layer{
     public void receive(DatagramPacket packet, DatagramSocket socket) throws IOException {
         socket.receive(packet);
 
-        //wtf ça marche???
         CRC32 crc = new CRC32();
-        String test = new String(packet.getData(), 0, packet.getLength());
-        crc.update(test.getBytes());
-        System.out.println("CRC32:"+ crc.getValue());
+        crc.update(separateByteArrays(32, 199, packet.getData()));
+        System.out.println("CRC32 DATA:"+ crc.getValue());
 
-        //System.out.println("Data receive");
         if(previous != null)
         {
             previous.receive(packet, socket);

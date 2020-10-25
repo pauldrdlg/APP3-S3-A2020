@@ -23,7 +23,6 @@ public class ApplicationLayer extends Layer{
 
         fileName = fileName.split("/")[1];*/
 
-
         BufferedReader in = null;
 
         try {
@@ -41,7 +40,6 @@ public class ApplicationLayer extends Layer{
         message = message.substring(0, message.length() - 1);
         in.close();
         byte[] fileData = message.getBytes();
-        //packet.setData(message.getBytes(), 0, message.getBytes().length);
 
         if(next != null)
         {
@@ -72,7 +70,6 @@ public class ApplicationLayer extends Layer{
             System.out.println("Exception: " + e);
         }
 
-        //System.out.println("Application receive");
         if(previous != null)
         {
             previous.receive(packet, socket);
