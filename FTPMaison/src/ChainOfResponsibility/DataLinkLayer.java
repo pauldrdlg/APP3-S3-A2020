@@ -9,6 +9,8 @@ import ServerUtility.*;
 
 public class DataLinkLayer extends Layer{
     private int previousPacket = -1;
+    private boolean simulation1 = true;
+    private boolean simulation2 = true;
 
     @Override
     public void send(DatagramPacket packet, DatagramSocket socket) throws IOException {
@@ -30,15 +32,17 @@ public class DataLinkLayer extends Layer{
         byte[] numberBytes = separateByteArrays(28, 31, packet.getData());
         int number = ByteBuffer.wrap(numberBytes).getInt();
 
-        if(number == 2)
+        if(number == 2 && simulation1)
         {
+            simulation1 = false;
             packet = SimulationWrongCRC(packet);
         }
 
-        if(number != 1)
+        /*if(number != 1 && simulation2)
         {
+            simulation2 = false;*/
             socket.send(packet);
-        }
+        //}
 
         if(next != null)
         {
@@ -56,11 +60,14 @@ public class DataLinkLayer extends Layer{
         byte[] numberBytes = separateByteArrays(28, 31, packet.getData());
         int number = ByteBuffer.wrap(numberBytes).getInt();
 
+        boolean verifyCRC = true;
+
         if(crc.getValue() != ByteBuffer.wrap(separateByteArrays(0, 7, packet.getData())).getLong())
         {
             log.addWarningToLog("CRC not corresponding on packet " + number + "!");
             log.addcrcPacketError();
             previousPacket++;
+            verifyCRC = false;
         }
         else if(previousPacket + 1 != number)
         {
@@ -86,7 +93,7 @@ public class DataLinkLayer extends Layer{
         }
         log.addReceivedPacket();
 
-        if(previous != null)
+        if(previous != null && verifyCRC)
         {
             previous.receive(packet, socket, log);
         }

@@ -127,14 +127,14 @@ public class TransportLayer extends Layer{
                 completedFile = addByteArrays(completedFile, dataBytes);
                 received[number] = true;
 
-                if (number == 3) received[number] = false;
+                //if (number == 3) received[number] = false;
 
                 break;
             case "ACK":
                 System.out.println("Accusé de réception du paquet " + number + " : " + data);
 
                 if (data.equals("FAIL")) {
-                    //next.send(listPackets[number], socket);
+                    next.send(listPackets[number], socket);
                 }
                 break;
             default:
@@ -142,11 +142,9 @@ public class TransportLayer extends Layer{
         }
 
         // entrer dans le if seulement si on est rendu au dernier paquet et si on est dans le serveur
-        if (received != null) {
+        if (received != null && number == nbPackets) {
             for (int i = 0; i <= nbPackets; i++) {
-                byte[] ACKpacketContent = new byte[0];
-
-                ACKpacketContent = createACKPacket(i, received[i]);
+                byte[] ACKpacketContent = createACKPacket(i, received[i]);
 
                 sendACKPacket(ACKpacketContent, packet, socket);
             }
