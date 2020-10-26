@@ -21,7 +21,7 @@ public class ServerApplicationThread extends Thread{
 
     public ServerApplicationThread(String name) throws IOException {
         super(name);
-        socket = new DatagramSocket(4445);
+        socket = new DatagramSocket(25567);
 
         transportLayer = new TransportLayer();
         dataLinkLayer = new DataLinkLayer();

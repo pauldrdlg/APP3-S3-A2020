@@ -54,7 +54,7 @@ public class ClientApplicationThread extends Thread{
     public void sendFile(String fileName, InetAddress address) throws IOException {
         byte[] buf = new byte[200];
 
-        DatagramPacket packet = new DatagramPacket(buf, buf.length, address, 4445);
+        DatagramPacket packet = new DatagramPacket(buf, buf.length, address, 25567);
 
         applicationLayer.send(packet, socket, fileName);
     }

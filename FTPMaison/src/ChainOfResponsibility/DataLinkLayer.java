@@ -8,6 +8,8 @@ import java.util.zip.CRC32;
 import ServerUtility.*;
 
 public class DataLinkLayer extends Layer{
+    private int previousPacket = -1;
+
     @Override
     public void send(DatagramPacket packet, DatagramSocket socket) throws IOException {
 
@@ -21,10 +23,22 @@ public class DataLinkLayer extends Layer{
 
         byte[] crcByte = ByteBuffer.allocate(crcSize).putLong(crc.getValue()).array();
 
-        // set CRC
+        // Set CRC
         packet.setData(writeIntoByteArrays(0, 7, packet.getData(), crcByte));
 
-        socket.send(packet);
+        //Simulations erreurs
+        byte[] numberBytes = separateByteArrays(28, 31, packet.getData());
+        int number = ByteBuffer.wrap(numberBytes).getInt();
+
+        if(number == 2)
+        {
+            packet = SimulationWrongCRC(packet);
+        }
+
+        if(number != 1)
+        {
+            socket.send(packet);
+        }
 
         if(next != null)
         {
@@ -38,18 +52,54 @@ public class DataLinkLayer extends Layer{
 
         CRC32 crc = new CRC32();
         crc.update(separateByteArrays(8, 199, packet.getData()));
-        System.out.println("CRC32 DATA: "+ crc.getValue());
 
-        log.addReceivedPacket();
+        byte[] numberBytes = separateByteArrays(28, 31, packet.getData());
+        int number = ByteBuffer.wrap(numberBytes).getInt();
 
         if(crc.getValue() != ByteBuffer.wrap(separateByteArrays(0, 7, packet.getData())).getLong())
         {
+            log.addWarningToLog("CRC not corresponding on packet " + number + "!");
             log.addcrcPacketError();
+            previousPacket++;
         }
+        else if(previousPacket + 1 != number)
+        {
+            log.addInfoToLog("Packet " + number + " received");
+
+            for(int i = previousPacket + 1; i < number; i++)
+            {
+                log.addWarningToLog("Packet missing!");
+                log.addLostPacket();
+            }
+
+            previousPacket = number;
+        }
+        else if(number == 0)
+        {
+            log.addInfoToLog("Packet 0: new file received");
+            previousPacket++;
+        }
+        else
+        {
+            log.addInfoToLog("Packet " + number + " received");
+            previousPacket++;
+        }
+        log.addReceivedPacket();
 
         if(previous != null)
         {
             previous.receive(packet, socket, log);
         }
+    }
+
+    public DatagramPacket SimulationWrongCRC(DatagramPacket packet)
+    {
+        byte[] temp= packet.getData();
+
+        temp = writeIntoByteArrays(70, 71, temp, new byte[2]);
+
+        packet.setData(temp);
+
+        return packet;
     }
 }

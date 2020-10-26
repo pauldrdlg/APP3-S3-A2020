@@ -1,49 +1,72 @@
 package ServerUtility;
 
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
+
 public class Log {
-    private int transmittedPacket;
     private int receivedPacket;
     private int lostPacket;
     private int crcPacketError;
-    private String filename;
+
+    private Logger logger;
 
     public Log(String fileName) {
-        this.transmittedPacket = 0;
-        this.receivedPacket = 0;
-        this.lostPacket = 0;
-        this.crcPacketError = 0;
-        this.filename = fileName;
-    }
+        receivedPacket = 0;
+        lostPacket = 0;
+        crcPacketError = 0;
 
-    public int getTransmittedPacket() {
-        return this.transmittedPacket;
-    }
+        try
+        {
+            logger = Logger.getLogger("Cool Log");
+            FileHandler fh = new FileHandler("Logs/" + fileName);
+            logger.addHandler(fh);
+            SimpleFormatter formatter = new SimpleFormatter();
+            fh.setFormatter(formatter);
 
-    public void addTransmittedPacket() {
-        transmittedPacket++;
+            //True si tu veux voir les logs dans la console, false si tu ne veux pas les voir
+            logger.setUseParentHandlers(true);
+
+            logger.info("Start of the log");
+        }
+        catch(Exception e)
+        {
+            System.out.println("Error in the creation of the log: " + fileName + " || " + e.getMessage());
+        }
     }
 
     public int getReceivedPacket() {
-        return this.receivedPacket;
+        return receivedPacket;
     }
 
     public void addReceivedPacket() {
         receivedPacket++;
+        logger.info("Total packet received: " + receivedPacket);
     }
 
     public int getLostPacket() {
-        return this.lostPacket;
+        return lostPacket;
     }
 
     public void addLostPacket() {
         lostPacket++;
+        logger.warning("Total lost packet: " + lostPacket + "!");
     }
 
     public int getcrcPacketError() {
-        return this.crcPacketError;
+        return crcPacketError;
     }
 
     public void addcrcPacketError() {
         crcPacketError++;
+        logger.warning("Total CRC packet error: " + crcPacketError + "!");
+    }
+
+    public void addInfoToLog(String message) {
+        logger.info(message);
+    }
+
+    public void addWarningToLog(String message) {
+        logger.warning(message);
     }
 }

@@ -105,10 +105,10 @@ public class TransportLayer extends Layer{
         dataBytes = trimZeros(dataBytes);
         String data = new String(dataBytes, 0, dataBytes.length);
 
-        System.out.println(crc);
+        /*System.out.println(crc);
         System.out.println(message);
         System.out.println(number);
-        System.out.println(data);
+        System.out.println(data);*/
 
         switch (message)
         {
