@@ -29,12 +29,6 @@ public abstract class Layer {
         }
     }
 
-    public void send(DatagramPacket[] listPackets, DatagramSocket socket) throws IOException {
-        if (next != null) {
-            next.send(listPackets, socket);
-        }
-    }
-
     public void send(DatagramPacket packet, DatagramSocket socket, String fileName) throws IOException {
         if (next != null) {
             next.send(packet, socket);

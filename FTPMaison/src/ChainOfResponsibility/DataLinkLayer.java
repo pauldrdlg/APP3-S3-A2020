@@ -38,7 +38,7 @@ public class DataLinkLayer extends Layer{
             packet = SimulationWrongCRC(packet);
         }
 
-        /*if(number != 1 && simulation2)
+        /*if(number != 1)
         {
             simulation2 = false;*/
             socket.send(packet);
