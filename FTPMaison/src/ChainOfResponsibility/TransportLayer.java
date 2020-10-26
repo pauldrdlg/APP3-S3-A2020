@@ -110,6 +110,8 @@ public class TransportLayer extends Layer{
         System.out.println(number);
         System.out.println(data);*/
 
+        //byte[] ACKpacketContent = new byte[0];
+
         switch (message)
         {
             case "FIRST":
@@ -117,26 +119,44 @@ public class TransportLayer extends Layer{
 
                 fileName = data.split("@@")[0];
                 nbPackets = Integer.parseInt(data.split("@@")[1]);
-
                 received = new boolean[nbPackets + 1];
-                received[0] = true;
+                received[number] = true;
 
                 break;
             case "DATA":
                 completedFile = addByteArrays(completedFile, dataBytes);
                 received[number] = true;
+
+                if (number == 3) received[number] = false;
+
                 break;
             case "ACK":
                 System.out.println("Accusé de réception du paquet " + number + " : " + data);
+
+                if (data.equals("FAIL")) {
+                    //next.send(listPackets[number], socket);
+                }
                 break;
             default:
                 break;
         }
 
-        if(previous != null)
-        {
-            previous.receive(packet, socket, log, fileName, completedFile);
+        // entrer dans le if seulement si on est rendu au dernier paquet et si on est dans le serveur
+        if (received != null) {
+            for (int i = 0; i <= nbPackets; i++) {
+                byte[] ACKpacketContent = new byte[0];
+
+                ACKpacketContent = createACKPacket(i, received[i]);
+
+                sendACKPacket(ACKpacketContent, packet, socket);
+            }
+
+            if(previous != null)
+            {
+                previous.receive(packet, socket, log, fileName, completedFile);
+            }
         }
+
     }
 
     public byte[] createFirstPacket(String fileName, int nbPackets) {
@@ -188,8 +208,13 @@ public class TransportLayer extends Layer{
         return addByteArrays(crc,addByteArrays(message, addByteArrays(number, data)));
     }
 
-    public void sendACKPacket(int numberPacket, boolean received) {
-        /*code pour envoyer un paquet ACK*/
+    public void sendACKPacket(byte[] packetContent, DatagramPacket packet, DatagramSocket socket) throws IOException {
+        packet.setData(packetContent, 0, packetContent.length);
+
+        if(next != null)
+        {
+            next.send(packet, socket);
+        }
     }
 
     public void resetFile() {
