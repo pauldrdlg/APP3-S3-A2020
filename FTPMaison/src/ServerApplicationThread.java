@@ -67,18 +67,4 @@ public class ServerApplicationThread extends Thread{
         }
         socket.close();
     }
-
-    /*protected String getNextQuote() {
-        String returnValue = null;
-        try {
-            if ((returnValue = in.readLine()) == null) {
-                in.close();
-                moreQuotes = false;
-                returnValue = "No more quotes. Goodbye.";
-            }
-        } catch (IOException e) {
-            returnValue = "IOException occurred in server.";
-        }
-        return returnValue;
-    }*/
 }
