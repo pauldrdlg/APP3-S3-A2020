@@ -1,20 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <diagram program="umlet" version="14.3.0">
-  <zoom_level>10</zoom_level>
+  <zoom_level>8</zoom_level>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>730</x>
-      <y>220</y>
-      <w>380</w>
-      <h>140</h>
+      <x>1072</x>
+      <y>88</y>
+      <w>256</w>
+      <h>56</h>
     </coordinates>
     <panel_attributes>ClientApplication
 --
--transportLayerSend : TransportLayer
--dataLinkLayerSend : DataLinkLayer
--transportLayerReceive : TransportLayer
--dataLinkLayerReceive : DataLinkLayer
 -clientApplicationThread : ClientApplicationThread
 --
 +main(args[] String)
@@ -24,18 +20,14 @@
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>320</x>
-      <y>220</y>
-      <w>340</w>
-      <h>140</h>
+      <x>296</x>
+      <y>88</y>
+      <w>256</w>
+      <h>56</h>
     </coordinates>
     <panel_attributes>ServerApplication
 --
--transportLayerSend : TransportLayer
--dataLinkLayerSend : DataLinkLayer
--transportLayerReceive : TransportLayer
--dataLinkLayerReceive : DataLinkLayer
--serverApplicationThread : ServerApplicationThread
+
 --
 +main(args[] String)
 </panel_attributes>
@@ -44,183 +36,281 @@
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>450</x>
-      <y>640</y>
-      <w>210</w>
-      <h>70</h>
+      <x>568</x>
+      <y>728</y>
+      <w>472</w>
+      <h>184</h>
     </coordinates>
     <panel_attributes>TransportLayer
 --
-
+-completedFile : byte[]
+-fileName : String
+-nbPackets : Integer
+-received : boolean[]
+-listPackets : DatagramPacket[]
 --
++send(packet : DatagramPacket, socket : DatagramSocket, fileName : String, buf : byte[])
++receive(packet : DatagramPacket, socket : DatagramSocket, log : Log)
++createFirstPacket(fileName : String, nbPackets : Integer) : byte[]
++createPacket(numberPacket : Interger, dataPacket : byte[]) : byte[]
++createACKPacket(numberPacket : integer, received : boolean) : byte[]
++sendACKPacket(packetContent : byte[], packet : DatagraPacket, socket : DatagramPacket)
++resetFile()
 
-</panel_attributes>
+bg=yellow</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>720</x>
-      <y>640</y>
-      <w>210</w>
-      <h>70</h>
+      <x>1072</x>
+      <y>728</y>
+      <w>368</w>
+      <h>104</h>
     </coordinates>
     <panel_attributes>DataLinkLayer
 --
-
+-previousPacket : Integer
+-simulation1 : boolean
+-simulation2 : boolean
 --
++send(packet : DatagramPacket, socket : DatagramSocket)
++receive(packet : DatagramPacket, socket : DatagramSocket, log : Log)
+-SimulationWrongCRC(packet: DatagramPacket) : DatagramPacket
 
-</panel_attributes>
+bg=yellow</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>590</x>
-      <y>430</y>
-      <w>210</w>
-      <h>100</h>
+      <x>544</x>
+      <y>376</y>
+      <w>512</w>
+      <h>256</h>
     </coordinates>
     <panel_attributes>Layer
 --
--next : Layer
+#next : Layer
+#previous : Layer
+#messageSzie: Integer
+#numberSize : Integer
+#crcSize : Integer
+#dataSize : Integer
 --
-+setNext(layer Layer)
-+send()
-+receive()</panel_attributes>
-    <additional_attributes/>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>620</x>
-      <y>520</y>
-      <w>30</w>
-      <h>140</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;120.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>750</x>
-      <y>520</y>
-      <w>30</w>
-      <h>140</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;120.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>750</x>
-      <y>350</y>
-      <w>30</w>
-      <h>100</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>10.0;80.0;10.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>620</x>
-      <y>350</y>
-      <w>30</w>
-      <h>100</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>10.0;80.0;10.0;10.0</additional_attributes>
-  </element>
-  <element>
-    <id>UMLClass</id>
-    <coordinates>
-      <x>580</x>
-      <y>20</y>
-      <w>210</w>
-      <h>100</h>
-    </coordinates>
-    <panel_attributes>Thread
---
++setNext(layer : Layer)
++setPrevious(layer : Layer)
++send(packet : DatagramPacket, socket : DatagramSocket)
++send(packet : DatagramPacket, socket : DatagramSocket, fileName : String)
++send(packet : DatagramPacket, socket : DatagramSocket, fileName : String, buf : byte[])
++receive(packet : DatagramPacket, socket : DatagramSocket, log : Log)
++receive(packet : DatagramPacket, socket : DatagramSocket, log : Log, fileName : String, buf : byte[])
++trimZeros(buf : byte[]) : byte[]
++fillWithZeros(totalSize : Integer, buf : byte[]) : byte[]
++addByteArrays(buf1 : byte[], buf2 : byte[]) : byte[]
++separateByteArrays(startIndex : Integer, endIndex : Integer, buf : byte[]) : byte[]
++writeIntoByteArrays(start : Integer, end : Integer, originalBuf : byte[], toInsert : byte[]) : byte[]
 
---
-</panel_attributes>
+bg=yellow</panel_attributes>
     <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>792</x>
+      <y>624</y>
+      <w>24</w>
+      <h>120</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;130.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1048</x>
+      <y>616</y>
+      <w>216</w>
+      <h>128</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>10.0;10.0;250.0;10.0;250.0;140.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>1048</x>
+      <y>352</y>
+      <w>168</w>
+      <h>112</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>10.0;120.0;190.0;120.0;190.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>408</x>
+      <y>336</y>
+      <w>152</w>
+      <h>128</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>170.0;140.0;10.0;140.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>30</x>
-      <y>240</y>
-      <w>210</w>
-      <h>100</h>
+      <x>272</x>
+      <y>208</y>
+      <w>304</w>
+      <h>136</h>
     </coordinates>
     <panel_attributes>ServerApplicationThread
 --
-
+#socket : DatagramSocket
+-transportLayer : TransportLayer
+-dataLinkLayer : DataLinkLayer
+-applicationLayer : ApplicationLayer
+-log : Log
 --
+-ServerApplicationThread()
+-ServerApplicationThread(name : String)
+-run()
 </panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>UMLClass</id>
     <coordinates>
-      <x>1180</x>
-      <y>240</y>
-      <w>210</w>
-      <h>100</h>
+      <x>1040</x>
+      <y>200</y>
+      <w>312</w>
+      <h>160</h>
     </coordinates>
     <panel_attributes>ClientApplicationThread
 --
-
+-isActive : boolean
+-transportLayer : TransportLayer
+-dataLinkLayer : DataLinkLayer
+-applicationLayer : ApplicationLayer
+-socket : DatagramSocket
+-log : Log
 --
-</panel_attributes>
++ClientApplicationThread()
++ClientApplicationThread(name : String)
++run()
++sendFile(fileName : String, address :InetAddress)</panel_attributes>
     <additional_attributes/>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>120</x>
-      <y>110</y>
-      <w>510</w>
-      <h>150</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
-    <additional_attributes>490.0;10.0;490.0;60.0;10.0;60.0;10.0;130.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>750</x>
-      <y>110</y>
-      <w>550</w>
-      <h>150</h>
-    </coordinates>
-    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
-    <additional_attributes>10.0;10.0;10.0;60.0;530.0;60.0;530.0;130.0</additional_attributes>
-  </element>
-  <element>
-    <id>Relation</id>
-    <coordinates>
-      <x>230</x>
-      <y>280</y>
-      <w>110</w>
-      <h>30</h>
+      <x>408</x>
+      <y>136</y>
+      <w>24</w>
+      <h>88</h>
     </coordinates>
     <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>10.0;10.0;90.0;10.0</additional_attributes>
+    <additional_attributes>10.0;90.0;10.0;10.0</additional_attributes>
   </element>
   <element>
     <id>Relation</id>
     <coordinates>
-      <x>1100</x>
-      <y>280</y>
-      <w>100</w>
-      <h>30</h>
+      <x>1192</x>
+      <y>136</y>
+      <w>24</w>
+      <h>80</h>
     </coordinates>
     <panel_attributes>lt=&lt;-</panel_attributes>
-    <additional_attributes>80.0;10.0;10.0;10.0</additional_attributes>
+    <additional_attributes>10.0;80.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>24</x>
+      <y>728</y>
+      <w>512</w>
+      <h>80</h>
+    </coordinates>
+    <panel_attributes>ApplicationLayer
+--
+-folderName : String
+--
++ApplicationLayer(folderName : String)
++send(packet : DatagramPacket, socket : DatagramSocket, fileName : String)
++receive(packet : DatagramPacket, socket : DatagramSocket, log : Log, fileName : String, buf : byte[])
+
+bg=yellow</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>664</x>
+      <y>192</y>
+      <w>288</w>
+      <h>160</h>
+    </coordinates>
+    <panel_attributes>Log
+--
+-receivedPacket : Integer
+-lostPacket : Integr
+-crcPacketError : Integer
+-logger : Logger
+--
++Log(fileName : String)
++getReceivedPacket() : Integer
++getLostPacket() : Integer
++getcrcPacketError() : Integer
++addInfoToLog(message String)
++addWarningToLog(message : String)</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>272</x>
+      <y>616</y>
+      <w>288</w>
+      <h>128</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;&lt;-</panel_attributes>
+    <additional_attributes>340.0;10.0;10.0;10.0;10.0;140.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>568</x>
+      <y>248</y>
+      <w>112</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;</panel_attributes>
+    <additional_attributes>10.0;10.0;120.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>944</x>
+      <y>248</y>
+      <w>112</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>lt=-&gt;</panel_attributes>
+    <additional_attributes>120.0;10.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>UMLNote</id>
+    <coordinates>
+      <x>72</x>
+      <y>408</y>
+      <w>232</w>
+      <h>48</h>
+    </coordinates>
+    <panel_attributes>Design Patterns:
+
+Chain of responsability = Yellow</panel_attributes>
+    <additional_attributes/>
   </element>
 </diagram>
