@@ -5,6 +5,11 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
+/**
+ * @author Paul du Réau et Olivier Lortie
+ *
+ * Cette classe gère le thread du serveur du protocole maison
+ */
 public class ServerApplicationThread extends Thread{
     protected DatagramSocket socket;
     private boolean run = true;
@@ -19,6 +24,12 @@ public class ServerApplicationThread extends Thread{
         this("ServerApplicationThread");
     }
 
+    /**
+     * Constructeur du thread
+     *
+     * @param name Nom du thread
+     * @throws IOException
+     */
     public ServerApplicationThread(String name) throws IOException {
         super(name);
         socket = new DatagramSocket(25567);
@@ -35,6 +46,9 @@ public class ServerApplicationThread extends Thread{
         log = new Log("ServerLiaisonDeDonnees.log");
     }
 
+    /**
+     * Cette fonction sera exécutée au début du thread et permet d'écouter la reception des fichiers de données
+     */
     public void run() {
         while (run) {
             try {

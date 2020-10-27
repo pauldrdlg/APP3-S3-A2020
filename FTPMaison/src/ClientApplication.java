@@ -11,6 +11,11 @@
 import java.io.IOException;
 import java.net.InetAddress;
 
+/**
+ * @author Paul du Réau et Olivier Lortie
+ *
+ * Cette classe gère les arguments d'entrée du client du protocole maison et le début du thread
+ */
 public class ClientApplication {
     private static ClientApplicationThread clientApplicationThread;
     public static void main(String[] args) throws IOException {

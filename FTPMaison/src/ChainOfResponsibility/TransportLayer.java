@@ -35,6 +35,13 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 
+/**
+ * @author Paul du Réau et Olivier Lortie
+ *
+ * Cette classe représente la couche de transport du protocole maison
+ * Fait partie du pattern de la chaine de responsabilité
+ * Elle gère la séparation, la reconstitution des fichiers, la demande d'envoi des ACK et des packets
+ */
 public class TransportLayer extends Layer{
     // Ces attributs servent à reconstituer le fichier complet à la réception
     private byte[] completedFile = new byte[0];
@@ -50,6 +57,16 @@ public class TransportLayer extends Layer{
     // Ces attributs permettent de gérer les accusés de réception et de renvoyer des paquets au besoin
     private DatagramPacket[] listPackets;
 
+    /**
+     * Étape de la couche de transport qui envoie des données
+     *
+     * @param packet Packet contenant l'adresse et le port
+     * @param socket Socket qui envoie la packet
+     * @param fileName Nom du fichier
+     * @param buf Tableau de byte qui contient le fichier à écrire
+     * @param error Paramètre de simulation d'erreur (0, 1, 2 ou 3)
+     * @throws IOException
+     */
     @Override
     public void send(DatagramPacket packet, DatagramSocket socket, String fileName, byte[] buf, String error) throws IOException{
         int nbPackets = (buf.length / dataSize) + 1;
@@ -92,6 +109,15 @@ public class TransportLayer extends Layer{
         }
     }
 
+    /**
+     * Étape de la couche de transport qui reçoit des données
+     *
+     * @param packet Packet contenant l'adresse et le port
+     * @param socket Socket qui envoie la packet
+     * @param log Paramètre pour écrire dans les logs
+     * @throws IOException
+     * @throws TransmissionErrorException
+     */
     @Override
     public void receive(DatagramPacket packet, DatagramSocket socket, Log log) throws IOException, TransmissionErrorException{
         byte[] messageBytes = separateByteArrays(8, 27, packet.getData());
@@ -179,6 +205,13 @@ public class TransportLayer extends Layer{
         }
     }
 
+    /**
+     * Création du packet 0 (premier packet)
+     *
+     * @param fileName Nom du fichier à envoyer
+     * @param nbPackets Nombre de packet total de la transmission
+     * @return Le contenu du packet 0 sous forme de tableau de bytes
+     */
     public byte[] createFirstPacket(String fileName, int nbPackets) {
         byte[] crc = new byte[crcSize];
 
@@ -193,6 +226,13 @@ public class TransportLayer extends Layer{
         return addByteArrays(crc,addByteArrays(message, addByteArrays(number, data)));
     }
 
+    /**
+     * Création d'un packet de donneés
+     *
+     * @param numberPacket Numéro du packet en cours d'envoi
+     * @param dataPacket Données du packet à envoyer
+     * @return Le contenu du packet à envoyer sous forme de tableau de bytes
+     */
     public byte[] createPacket(int numberPacket, byte[] dataPacket) {
         byte[] crc = new byte[crcSize];
 
@@ -207,6 +247,13 @@ public class TransportLayer extends Layer{
         return addByteArrays(crc,addByteArrays(message, addByteArrays(number, data)));
     }
 
+    /**
+     * Création d'un packet ACK
+     *
+     * @param numberPacket Numéro du packet en cours d'envoi
+     * @param received Permet de savoir si le packet correspondant est bien reçu
+     * @return Le contenu du packet ACK à envoyer sous forme de tableau de bytes
+     */
     public byte[] createACKPacket(int numberPacket, boolean received) {
         byte[] crc = new byte[crcSize];
 
@@ -227,6 +274,14 @@ public class TransportLayer extends Layer{
         return addByteArrays(crc,addByteArrays(message, addByteArrays(number, data)));
     }
 
+    /**
+     * Envoi un packet ACK en appelant la prochaine couche (liaison de données)
+     *
+     * @param packetContent Contenu du packet ACK
+     * @param packet Packet qui contient l'adresse et le port
+     * @param socket Socket pour envoyer le packet
+     * @throws IOException
+     */
     public void sendACKPacket(byte[] packetContent, DatagramPacket packet, DatagramSocket socket) throws IOException {
         packet.setData(packetContent, 0, packetContent.length);
 
@@ -236,6 +291,9 @@ public class TransportLayer extends Layer{
         }
     }
 
+    /**
+     * Réinitialise le fichier qui reconstruit les données des packets reçu
+     */
     public void resetFile() {
         completedFile = new byte[0];
     }

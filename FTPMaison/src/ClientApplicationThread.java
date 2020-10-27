@@ -6,6 +6,11 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
+/**
+ * @author Paul du Réau et Olivier Lortie
+ *
+ * Cette classe gère le thread du client du protocole maison
+ */
 public class ClientApplicationThread extends Thread{
     private static boolean run = true;
     private static TransportLayer transportLayer;
@@ -18,6 +23,12 @@ public class ClientApplicationThread extends Thread{
         this("ClientApplicationThread");
     }
 
+    /**
+     * Constructeur du thread
+     *
+     * @param name Nom du thread
+     * @throws IOException
+     */
     public ClientApplicationThread(String name) throws IOException {
         super(name);
         socket = new DatagramSocket();
@@ -34,6 +45,9 @@ public class ClientApplicationThread extends Thread{
         log = new Log("ClientLiaisonDeDonnees.log");
     }
 
+    /**
+     * Cette fonction sera exécutée au début du thread et permet d'écouter la reception des fichiers ACK
+     */
     public void run() {
         while (run) {
             try {
@@ -51,6 +65,14 @@ public class ClientApplicationThread extends Thread{
         socket.close();
     }
 
+    /**
+     * Débute le processus d'envoi du fichier vers le serveur
+     *
+     * @param fileName Nom du fichier à lire
+     * @param address Adresse du serveur
+     * @param error Paramètre de simulation d'erreur (0, 1, 2 ou 3)
+     * @throws IOException
+     */
     public void sendFile(String fileName, InetAddress address, String error) throws IOException {
         byte[] buf = new byte[200];
 

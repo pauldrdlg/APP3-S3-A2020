@@ -8,9 +8,24 @@ import java.net.DatagramSocket;
 import java.nio.ByteBuffer;
 import java.util.zip.CRC32;
 
+/**
+ * @author Paul du Réau et Olivier Lortie
+ *
+ * Cette classe représente la couche de liaison de données du protocole maison
+ * Fait partie du pattern de la chaine de responsabilité
+ * Elle gère création des CRC, la simulation d'erreur, la détection d'erreur par le CRC
+ */
 public class DataLinkLayer extends Layer{
     private int previousPacket = -1;
 
+    /**
+     * Étape de la couche de liaison de données qui envoie des données
+     *
+     * @param packet Packet contenant l'adresse et le port
+     * @param socket Socket qui envoie la packet
+     * @param error Paramètre de simulation d'erreur (0, 1, 2 ou 3)
+     * @throws IOException
+     */
     @Override
     public void send(DatagramPacket packet, DatagramSocket socket, String error) throws IOException {
 
@@ -76,6 +91,15 @@ public class DataLinkLayer extends Layer{
         }
     }
 
+    /**
+     * Étape de la couche de liaison de données qui reçoit des données
+     *
+     * @param packet Packet contenant l'adresse et le port
+     * @param socket Socket qui envoie la packet
+     * @param log Paramètre pour écrire dans les logs
+     * @throws IOException
+     * @throws TransmissionErrorException
+     */
     @Override
     public void receive(DatagramPacket packet, DatagramSocket socket, Log log) throws IOException, TransmissionErrorException {
         socket.receive(packet);
@@ -125,6 +149,12 @@ public class DataLinkLayer extends Layer{
         }
     }
 
+    /**
+     * Insertion de deux bytes dans les données du packet pour simuler une erreur de CRC
+     *
+     * @param packet Packet contenant les données où l'erreur doit être insérée
+     * @return Un packet contenant des données erronés
+     */
     public DatagramPacket SimulationWrongCRC(DatagramPacket packet)
     {
         byte[] temp= packet.getData();
