@@ -111,6 +111,8 @@ public class TransportLayer extends Layer{
         switch (message)
         {
             case "FIRST":
+                System.out.println("Reception du packet 0");
+
                 resetFile();
 
                 fileName = data.split("@@")[0];
@@ -126,6 +128,8 @@ public class TransportLayer extends Layer{
                 break;
 
             case "DATA":
+                System.out.println("Reception du packet " + number);
+
                 received[number] = true;
 
                 for (int i = previousPacket + 1; i < number; i++) {
