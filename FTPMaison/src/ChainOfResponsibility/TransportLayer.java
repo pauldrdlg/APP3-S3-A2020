@@ -234,5 +234,8 @@ public class TransportLayer extends Layer{
 
     public void resetFile() {
         completedFile = new byte[0];
+        received = new boolean[0];
+        previousPacket = 0;
+        errorCount = 0;
     }
 }
