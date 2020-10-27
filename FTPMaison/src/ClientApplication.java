@@ -9,24 +9,19 @@
 * */
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
-
-import ChainOfResponsibility.*;
 
 public class ClientApplication {
     private static ClientApplicationThread clientApplicationThread;
     public static void main(String[] args) throws IOException {
 
-        if (args.length != 1) {
-            System.out.println("Il manque un parametre pour designer le destinataire: ClientApplication ligne 31");
+        if (args.length != 3) {
+            System.out.println("Il manque un parametre pour designer le destinataire: ClientApplication ligne 23");
             return;
         }
 
         clientApplicationThread = new ClientApplicationThread();
-        clientApplicationThread.sendFile("test.txt", InetAddress.getByName(args[0]));
+        clientApplicationThread.sendFile(args[0], InetAddress.getByName(args[1]), args[2]);
         clientApplicationThread.start();
-
     }
 }

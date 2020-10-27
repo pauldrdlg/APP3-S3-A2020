@@ -7,7 +7,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 
 public class ClientApplicationThread extends Thread{
-    private static boolean isActive = true;
+    private static boolean run = true;
     private static TransportLayer transportLayer;
     private static DataLinkLayer dataLinkLayer;
     private static ApplicationLayer applicationLayer;
@@ -35,27 +35,27 @@ public class ClientApplicationThread extends Thread{
     }
 
     public void run() {
-
-        while (isActive) {
+        while (run) {
             try {
                 byte[] buf = new byte[200];
+
                 // receive request
                 DatagramPacket packet = new DatagramPacket(buf, buf.length);
                 dataLinkLayer.receive(packet, socket, log);
 
-            } catch (IOException e) {
+            } catch (IOException | TransmissionErrorException e) {
                 e.printStackTrace();
+                run = false;
             }
         }
-
         socket.close();
     }
 
-    public void sendFile(String fileName, InetAddress address) throws IOException {
+    public void sendFile(String fileName, InetAddress address, String error) throws IOException {
         byte[] buf = new byte[200];
 
         DatagramPacket packet = new DatagramPacket(buf, buf.length, address, 25567);
 
-        applicationLayer.send(packet, socket, fileName);
+        applicationLayer.send(packet, socket, fileName, error);
     }
 }

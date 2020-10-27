@@ -25,7 +25,7 @@ public class Log {
             fh.setFormatter(formatter);
 
             //True si tu veux voir les logs dans la console, false si tu ne veux pas les voir
-            logger.setUseParentHandlers(true);
+            logger.setUseParentHandlers(false);
 
             logger.info("Start of the log");
         }

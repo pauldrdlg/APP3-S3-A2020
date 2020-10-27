@@ -23,17 +23,17 @@
             ACK
 
         - Taille réelle du paquet --> toujours 200 bytes
-         --------*/
+--------*/
 
 package ChainOfResponsibility;
+
+import ServerUtility.*;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
-
-import ServerUtility.*;
 
 public class TransportLayer extends Layer{
     // Ces attributs servent à reconstituer le fichier complet à la réception
@@ -45,15 +45,14 @@ public class TransportLayer extends Layer{
     private static boolean[] received = new boolean[0];
     private int previousPacket = 0;
     private boolean allReceived = true;
+    private int errorCount = 0;
 
     // Ces attributs permettent de gérer les accusés de réception et de renvoyer des paquets au besoin
     private DatagramPacket[] listPackets;
 
-
     @Override
-    public void send(DatagramPacket packet, DatagramSocket socket, String fileName, byte[] buf) throws IOException{
-
-        int nbPackets = (int) (buf.length / dataSize) + 1;
+    public void send(DatagramPacket packet, DatagramSocket socket, String fileName, byte[] buf, String error) throws IOException{
+        int nbPackets = (buf.length / dataSize) + 1;
 
         byte[] packet1 = createFirstPacket(fileName, nbPackets);
 
@@ -66,7 +65,7 @@ public class TransportLayer extends Layer{
         DatagramPacket temp0 = new DatagramPacket(packet1, packet1.length, address, port);
 
         if (next != null) {
-            next.send(temp0, socket);
+            next.send(temp0, socket, error);
         }
 
         for(int i = 1; i <= nbPackets; i++)
@@ -79,34 +78,22 @@ public class TransportLayer extends Layer{
                 end = buf.length - 1;
             }
 
-            byte[] packetX = createPacket(i, separateByteArrays(start, end, buf));
+            byte[] packetToSave = createPacket(i, separateByteArrays(start, end, buf));
+            byte[] packetToSend = createPacket(i, separateByteArrays(start, end, buf));
 
-            listPackets[i] = new DatagramPacket(packetX, packetX.length, address, port);
+            listPackets[i] = new DatagramPacket(packetToSave, packetToSave.length, address, port);
 
             if(next != null)
             {
-                DatagramPacket temp = new DatagramPacket(packetX, packetX.length, address, port);
-                byte[] dataBytes = separateByteArrays(32, 199, listPackets[i].getData());
-                dataBytes = trimZeros(dataBytes);
-                String data = new String(dataBytes, 0, dataBytes.length);
+                DatagramPacket temp = new DatagramPacket(packetToSend, packetToSend.length, address, port);
 
-                System.out.println("data before DATALINK : " + data);
-                next.send(temp, socket);
-                dataBytes = separateByteArrays(32, 199, listPackets[i].getData());
-                dataBytes = trimZeros(dataBytes);
-                data = new String(dataBytes, 0, dataBytes.length);
-
-                System.out.println("data after DATALINK : " + data);
-
+                next.send(temp, socket, error);
             }
         }
     }
 
     @Override
-    public void receive(DatagramPacket packet, DatagramSocket socket, Log log) throws IOException {
-        byte[] crcBytes = separateByteArrays(0, 7, packet.getData());
-        long crc = ByteBuffer.wrap(crcBytes).getLong();
-
+    public void receive(DatagramPacket packet, DatagramSocket socket, Log log) throws IOException, TransmissionErrorException{
         byte[] messageBytes = separateByteArrays(8, 27, packet.getData());
         messageBytes = trimZeros(messageBytes);
         String message = new String(messageBytes, 0, messageBytes.length);
@@ -117,17 +104,9 @@ public class TransportLayer extends Layer{
         byte[] dataBytes = separateByteArrays(32, 199, packet.getData());
         byte[] dataBytesNotTrimmed = dataBytes;
         dataBytes = trimZeros(dataBytes);
-        /*System.out.println("Paquet : " + number);
-        System.out.println("dataBytesNotTrimmed : " + dataBytesNotTrimmed.length);
-        System.out.println("dataBytes : " + dataBytes.length);*/
         String data = new String(dataBytes, 0, dataBytes.length);
 
-        System.out.println(crc);
-        System.out.println(message);
-        System.out.println(number);
-        System.out.println(data);
-
-        byte[] ACKpacketContent = new byte[0];
+        byte[] ACKpacketContent;
 
         switch (message)
         {
@@ -144,45 +123,44 @@ public class TransportLayer extends Layer{
                 ACKpacketContent = createACKPacket(number, true);
 
                 sendACKPacket(ACKpacketContent, packet, socket);
-
                 break;
+
             case "DATA":
                 received[number] = true;
 
                 for (int i = previousPacket + 1; i < number; i++) {
-                    ACKpacketContent = createACKPacket(i, false);
+                    errorCount++;
 
+                    if(errorCount == 3)
+                    {
+                        throw new TransmissionErrorException("3 errors found");
+                    }
+
+                    ACKpacketContent = createACKPacket(i, false);
                     sendACKPacket(ACKpacketContent, packet, socket);
                 }
 
                 ACKpacketContent = createACKPacket(number, true);
-
                 sendACKPacket(ACKpacketContent, packet, socket);
 
                 completedFile = writeIntoByteArrays(168 * (number - 1), (168 * number) - 1, completedFile, dataBytesNotTrimmed);
 
                 previousPacket = number;
-
                 break;
+
             case "ACK":
                 System.out.println("Accusé de réception du paquet " + number + " : " + data);
 
                 if (data.equals("FAIL")) {
-                    byte[] messageBytesTest = separateByteArrays(32, 199, listPackets[number].getData());
-                    messageBytesTest = trimZeros(messageBytesTest);
-                    String messageTest = new String(messageBytesTest, 0, messageBytesTest.length);
-
-                    System.out.println(messageTest);
-
                     System.out.println("Renvoi du paquet " + number);
-                    next.send(listPackets[number], socket);
+                    next.send(listPackets[number], socket, "0");
                 }
                 break;
-            default:
-                break;
+            default: break;
         }
 
         allReceived = true;
+
         for (int i = 0; i < received.length; i++) {
             if (!received[i]) {
                 allReceived = false;
@@ -195,8 +173,6 @@ public class TransportLayer extends Layer{
             completedFile = trimZeros(completedFile);
             previous.receive(packet, socket, log, fileName, completedFile);
         }
-
-
     }
 
     public byte[] createFirstPacket(String fileName, int nbPackets) {
@@ -213,8 +189,7 @@ public class TransportLayer extends Layer{
         return addByteArrays(crc,addByteArrays(message, addByteArrays(number, data)));
     }
 
-    public byte[] createPacket(int numberPacket, byte[] dataPacket)
-    {
+    public byte[] createPacket(int numberPacket, byte[] dataPacket) {
         byte[] crc = new byte[crcSize];
 
         byte[] message = "DATA".getBytes();
@@ -236,7 +211,7 @@ public class TransportLayer extends Layer{
 
         byte[] number = ByteBuffer.allocate(numberSize).putInt(numberPacket).array();
 
-        byte[] data = new byte[0];
+        byte[] data;
 
         if (received) {
             data = "DONE".getBytes();
@@ -253,7 +228,7 @@ public class TransportLayer extends Layer{
 
         if(next != null)
         {
-            next.send(packet, socket);
+            next.send(packet, socket, "0");
         }
     }
 

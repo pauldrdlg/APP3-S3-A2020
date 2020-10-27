@@ -6,6 +6,7 @@ import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
 
 public class ApplicationLayer extends Layer{
     private String folderName;
@@ -15,37 +16,18 @@ public class ApplicationLayer extends Layer{
     }
 
     @Override
-    public void send(DatagramPacket packet, DatagramSocket socket, String fileName) throws IOException {
-
-        BufferedReader in = null;
-
-        try {
-            in = new BufferedReader(new FileReader(folderName + "/" + fileName));
-        } catch (FileNotFoundException e) {
-
-            System.err.println("Could not open file. Serving time instead." + e);
-        }
-
-        String message = "", temp = "";
-
-        while (((temp = in.readLine())) != null) {
-            message += temp + "\n";
-        }
-        message = message.substring(0, message.length() - 1);
-        in.close();
-        byte[] fileData = message.getBytes();
+    public void send(DatagramPacket packet, DatagramSocket socket, String fileName, String error) throws IOException {
+        File file = new File(folderName + "/" + fileName);
+        byte[] fileData = Files.readAllBytes(file.toPath());
 
         if(next != null)
         {
-            next.send(packet, socket, fileName, fileData);
+            next.send(packet, socket, fileName, fileData, error);
         }
     }
 
     @Override
-    public void receive(DatagramPacket packet, DatagramSocket socket, Log log, String fileName, byte[] buf) throws IOException {
-        byte[] numberBytes = separateByteArrays(28, 31, packet.getData());
-        int number = ByteBuffer.wrap(numberBytes).getInt();
-
+    public void receive(DatagramPacket packet, DatagramSocket socket, Log log, String fileName, byte[] buf) throws IOException, TransmissionErrorException {
         String filepath = folderName + "/" + fileName;
         File file = new File(filepath);
 

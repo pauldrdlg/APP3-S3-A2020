@@ -1,10 +1,10 @@
 package ChainOfResponsibility;
 
+import ServerUtility.*;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-
-import ServerUtility.*;
 
 public abstract class Layer {
     protected Layer next;
@@ -23,32 +23,33 @@ public abstract class Layer {
         previous = previousLayer;
     }
 
-    public void send(DatagramPacket packet, DatagramSocket socket) throws IOException {
+
+    public void send(DatagramPacket packet, DatagramSocket socket, String error) throws IOException {
         if (next != null) {
-            next.send(packet, socket);
+            next.send(packet, socket, error);
         }
     }
 
-    public void send(DatagramPacket packet, DatagramSocket socket, String fileName) throws IOException {
+    public void send(DatagramPacket packet, DatagramSocket socket, String fileName, String error) throws IOException {
         if (next != null) {
-            next.send(packet, socket);
+            next.send(packet, socket, error);
         }
     }
 
-    public void send(DatagramPacket packet, DatagramSocket socket, String fileName, byte[] buf) throws IOException {
+    public void send(DatagramPacket packet, DatagramSocket socket, String fileName, byte[] buf, String error) throws IOException {
         if (next != null) {
-            next.send(packet, socket);
+            next.send(packet, socket, error);
         }
     }
 
 
-    public void receive(DatagramPacket packet, DatagramSocket socket, Log log) throws IOException {
+    public void receive(DatagramPacket packet, DatagramSocket socket, Log log) throws IOException, TransmissionErrorException {
         if (previous != null) {
             previous.receive(packet, socket, log);
         }
     }
 
-    public void receive(DatagramPacket packet, DatagramSocket socket, Log log, String fileName, byte[] buf) throws IOException {
+    public void receive(DatagramPacket packet, DatagramSocket socket, Log log, String fileName, byte[] buf) throws IOException, TransmissionErrorException {
         if (previous != null) {
             previous.receive(packet, socket, log);
         }
@@ -65,6 +66,7 @@ public abstract class Layer {
 
     public byte[] fillWithZeros(int totalSize, byte[] buf) {
         byte[] temp = new byte[totalSize];
+
         for (int i = 0; i < totalSize - (totalSize - buf.length); i++) {
             temp[i] = buf[i];
         }
@@ -75,8 +77,8 @@ public abstract class Layer {
     public byte[] addByteArrays(byte[] buf1, byte[] buf2) {
         int length = buf1.length + buf2.length;
         byte[] temp = new byte[length];
-
         int pos = 0;
+
         for (byte element : buf1) {
             temp[pos] = element;
             pos++;
@@ -103,8 +105,7 @@ public abstract class Layer {
     public byte[] writeIntoByteArrays(int start, int end, byte[] originalBuf, byte[] toInsert) {
         int count = 0;
 
-        for(int i = start; i <= end; i++)
-        {
+        for(int i = start; i <= end; i++) {
             originalBuf[i] = toInsert[count];
             count++;
         }

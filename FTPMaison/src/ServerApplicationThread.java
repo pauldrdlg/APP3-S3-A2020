@@ -1,13 +1,13 @@
+import ChainOfResponsibility.*;
+import ServerUtility.*;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 
-import ChainOfResponsibility.*;
-import ServerUtility.*;
-
 public class ServerApplicationThread extends Thread{
-    protected DatagramSocket socket = null;
-    private boolean moreQuotes = true;
+    protected DatagramSocket socket;
+    private boolean run = true;
 
     private TransportLayer transportLayer;
     private DataLinkLayer dataLinkLayer;
@@ -36,7 +36,7 @@ public class ServerApplicationThread extends Thread{
     }
 
     public void run() {
-        while (moreQuotes) {
+        while (run) {
             try {
                 byte[] buf = new byte[256];
 
@@ -44,25 +44,9 @@ public class ServerApplicationThread extends Thread{
                 DatagramPacket packet = new DatagramPacket(buf, buf.length);
 
                 dataLinkLayer.receive(packet, socket, log);
-
-                // figure out response
-                /*String dString = null;
-                if (in == null)
-                    dString = new Date().toString();
-                else
-                    dString = getNextQuote();
-                String dString = "Message du serveur!";
-                buf = dString.getBytes();*/
-
-                // send the response to the client at "address" and "port"
-                /*InetAddress address = packet.getAddress();
-                int port = packet.getPort();
-                packet = new DatagramPacket(buf, buf.length, address, port);
-
-                applicationLayer.send(packet, socket);*/
-            } catch (IOException e) {
+            } catch (IOException | TransmissionErrorException e) {
                 e.printStackTrace();
-                moreQuotes = false;
+                run = false;
             }
         }
         socket.close();
